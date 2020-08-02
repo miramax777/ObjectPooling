@@ -4,6 +4,8 @@ This graphics takes when main() method was runned, main() method in Main class, 
 
 ObjectPool use two lists and synchronized methods.
 
+Below you can find screenshots when multithread tests was runned.
+
 Common information
 ![alt text](https://github.com/miramax777/ObjectPooling/blob/master/Object_pool_v1_common_information.png?raw=true)
 

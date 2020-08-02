@@ -1,6 +1,7 @@
 package pool_V2;
 
 import pool_V1.ObjectState;
+import pool_V1.PriceQuotation;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -8,7 +9,10 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import static pool_V1.ObjectState.FREE;
 import static pool_V1.ObjectState.IN_USE;
@@ -69,6 +73,12 @@ public final class ObjectPoolV2 {
 
     public final synchronized void releaseAll() {
         poolLock = true;
+    }
+
+    public final synchronized Future<PriceQuotation> releaseAllNow(final Callable<PriceQuotation> callableTask) {
+        poolLock = true;
+
+        return new FutureTask<>(callableTask);
     }
 
     public final int poolCapacity() {

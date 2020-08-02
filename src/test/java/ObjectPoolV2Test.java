@@ -59,7 +59,7 @@ public class ObjectPoolV2Test {
         objectPool.release(object3);
 
         assertEquals(3, objectPool.numberOfPresentObject());
-        assertEquals(3, objectPool.numberOfFreeObject());
+        assertEquals(2, objectPool.numberOfFreeObject());
     }
 
     @Test(expected = RuntimeException.class)

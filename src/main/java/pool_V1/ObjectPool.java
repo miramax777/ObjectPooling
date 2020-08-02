@@ -4,7 +4,9 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 public class ObjectPool {
 
@@ -96,10 +98,10 @@ public class ObjectPool {
         poolLock = true;
     }
 
-    public final synchronized Future<PriceQuotation> releaseAllNow() {
+    public final synchronized Future<PriceQuotation> releaseAllNow(final Callable<PriceQuotation> callableTask) {
         poolLock = true;
 
-        return null;
+        return new FutureTask<>(callableTask);
     }
 
     public final int numberOfPresentObject() {

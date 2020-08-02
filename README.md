@@ -22,7 +22,7 @@ Direct Buffer
 ![alt text](https://github.com/miramax777/ObjectPooling/blob/master/Object_pool_v2_direct_buffer.png?raw=true)
 
 
-Multithread runing.
+### Multithread runing.
 
 ObjectPool use two lists and synchronized methods.
 

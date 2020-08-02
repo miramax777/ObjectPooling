@@ -1,6 +1,6 @@
 # Object pool pattern implementation
 
-## This graphics takes when main() method was runned, main() method in Main class, it's small one-thread poc.
+## These charts were obtained when the main () method was run, the main () method in the Main class is a small single-threaded document.
 
 Run in one main thread.
 

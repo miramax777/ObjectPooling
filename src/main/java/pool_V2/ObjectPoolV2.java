@@ -6,7 +6,6 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +18,7 @@ public final class ObjectPoolV2 {
     private int poolCapacity;
     private ConcurrentHashMap<PriceQuotationV2, ObjectState> objectsStore = new ConcurrentHashMap<>(poolCapacity);
     private ByteBuffer directBuffer;
+    private boolean poolLock;
 
     public ObjectPoolV2() {
         this.poolCapacity = 1;
@@ -29,6 +29,10 @@ public final class ObjectPoolV2 {
     }
 
     public final PriceQuotationV2 acquire() {
+        if (poolLock) {
+            throw new RuntimeException("Obtaining objects from the pool is not allowed.");
+        }
+
         if (directBuffer != null) {
             objectsStore = readBuffer(directBuffer).orElseThrow(() -> new RuntimeException("Error reading buffer."));
         }
@@ -63,6 +67,10 @@ public final class ObjectPoolV2 {
         rewriteBuffer();
     }
 
+    public final synchronized void releaseAll() {
+        poolLock = true;
+    }
+
     public final int poolCapacity() {
         return poolCapacity;
     }
@@ -72,7 +80,9 @@ public final class ObjectPoolV2 {
     }
 
     public final int numberOfFreeObject() {
-        return objectsStore.size();
+        return (int)objectsStore.entrySet().stream()
+                .filter(obj -> obj.getValue().equals(FREE))
+                .count();
     }
 
     private void rewriteBuffer() {

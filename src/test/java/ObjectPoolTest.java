@@ -1,9 +1,6 @@
 import org.junit.Test;
 import pool_V1.ObjectPool;
 import pool_V1.PriceQuotation;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -34,8 +31,8 @@ public class ObjectPoolTest {
     }
 
     @Test
-    public void acquireAndReleaseObjects()
-            throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public void acquireAndReleaseObjects() {
+
         final ObjectPool objectPool = new ObjectPool(3);
 
         objectPool.acquire();
@@ -45,11 +42,13 @@ public class ObjectPoolTest {
         objectPool.release(object3);
         objectPool.acquire();
         objectPool.acquire();
+
+        assertEquals(3, objectPool.numberOfPresentObject());
+        assertEquals(0, objectPool.numberOfFreeObject());
     }
 
     @Test
-    public void acquireAndReleaseObjectsAndCheckingFreeObjects()
-            throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public void acquireAndReleaseObjectsAndCheckingFreeObjects() {
         final ObjectPool objectPool = new ObjectPool(3);
 
         objectPool.acquire();
@@ -60,6 +59,23 @@ public class ObjectPoolTest {
 
         assertEquals(3, objectPool.numberOfPresentObject());
         assertEquals(2, objectPool.numberOfFreeObject());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void acquireAndReleaseObjectsStopIssuingNewObjects() {
+        final ObjectPool objectPool = new ObjectPool(3);
+
+        objectPool.acquire();
+        final PriceQuotation object2 = objectPool.acquire();
+        final PriceQuotation object3 = objectPool.acquire();
+        objectPool.release(object2);
+        objectPool.release(object3);
+
+        assertEquals(3, objectPool.numberOfPresentObject());
+        assertEquals(2, objectPool.numberOfFreeObject());
+
+        objectPool.releaseAll();
+        objectPool.acquire();
     }
 
     @Test

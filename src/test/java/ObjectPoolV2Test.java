@@ -43,6 +43,9 @@ public class ObjectPoolV2Test {
         objectPool.release(object3);
         objectPool.acquire();
         objectPool.acquire();
+
+        assertEquals(3, objectPool.numberOfPresentObject());
+        assertEquals(0, objectPool.numberOfFreeObject());
     }
 
     @Test
@@ -57,6 +60,23 @@ public class ObjectPoolV2Test {
 
         assertEquals(3, objectPool.numberOfPresentObject());
         assertEquals(3, objectPool.numberOfFreeObject());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void acquireAndReleaseObjectsStopIssuingNewObjects() {
+        final ObjectPoolV2 objectPool = new ObjectPoolV2(3);
+
+        objectPool.acquire();
+        final PriceQuotationV2 object2 = objectPool.acquire();
+        final PriceQuotationV2 object3 = objectPool.acquire();
+        objectPool.release(object2);
+        objectPool.release(object3);
+
+        assertEquals(3, objectPool.numberOfPresentObject());
+        assertEquals(2, objectPool.numberOfFreeObject());
+
+        objectPool.releaseAll();
+        objectPool.acquire();
     }
 
     @Test

@@ -4,6 +4,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.Future;
 
 public class ObjectPool {
 
@@ -12,6 +13,7 @@ public class ObjectPool {
     private List<PriceQuotation> unusedObjects = new ArrayList<>();
     private ByteBuffer usedObjectsBuffer;
     private ByteBuffer unusedObjectsBuffer;
+    private boolean poolLock;
 
     public ObjectPool() {
         this.poolCapacity = 1;
@@ -23,6 +25,10 @@ public class ObjectPool {
 
     public final synchronized PriceQuotation acquire() {
 
+        if (poolLock) {
+            throw new RuntimeException("Obtaining objects from the pool is not allowed.");
+        }
+
         if (unusedObjects.isEmpty() && usedObjects.size() == poolCapacity) {
             throw new RuntimeException("Object creation limit has been reached. Limit " + poolCapacity);
         }
@@ -30,7 +36,7 @@ public class ObjectPool {
         try {
             usedObjects = ByteBufferUtil.readBufferToList(usedObjectsBuffer, usedObjects);
             unusedObjects = ByteBufferUtil.readBufferToList(unusedObjectsBuffer, unusedObjects);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -45,6 +51,36 @@ public class ObjectPool {
 
         try {
             rewriteBuffers();
+        } catch (final IOException e) {
+            e.printStackTrace();
+        } catch (final NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (final IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (final InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        return priceQuotation;
+    }
+
+    public final synchronized void release(final PriceQuotation priceQuotation) {
+        priceQuotation.setToInitialState();
+
+        try {
+            usedObjects = ByteBufferUtil.readListFromBuffer(usedObjectsBuffer);
+            unusedObjects = ByteBufferUtil.readListFromBuffer(unusedObjectsBuffer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        usedObjects.remove(priceQuotation);
+        unusedObjects.add(priceQuotation);
+
+        try {
+            rewriteBuffers();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchMethodException e) {
@@ -54,29 +90,16 @@ public class ObjectPool {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-
-        return priceQuotation;
-    }
-
-    public final synchronized void release(final PriceQuotation priceQuotation)
-            throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        priceQuotation.setToInitialState();
-
-        usedObjects = ByteBufferUtil.readListFromBuffer(usedObjectsBuffer);
-        unusedObjects = ByteBufferUtil.readListFromBuffer(unusedObjectsBuffer);
-
-        usedObjects.remove(priceQuotation);
-        unusedObjects.add(priceQuotation);
-
-        rewriteBuffers();
     }
 
     public final synchronized void releaseAll() {
-
+        poolLock = true;
     }
 
-    public final synchronized void releaseAllNow() {
+    public final synchronized Future<PriceQuotation> releaseAllNow() {
+        poolLock = true;
 
+        return null;
     }
 
     public final int numberOfPresentObject() {

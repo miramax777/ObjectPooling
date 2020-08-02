@@ -1,5 +1,7 @@
 Object pool pattern implementation
 
+This graphics takes when main() method was runned, main() method in Main class, it's small one-thread poc.
+
 ObjectPool use two lists and synchronized methods.
 
 Common information

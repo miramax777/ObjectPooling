@@ -2,8 +2,6 @@
 
 ## This graphics takes when main() method was runned, main() method in Main class, it's small one-thread poc.
 
-## Below you can find screenshots when multithread tests was runned.
-
 Run in one main thread.
 
 ObjectPool use two lists and synchronized methods.
